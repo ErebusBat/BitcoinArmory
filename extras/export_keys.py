@@ -32,6 +32,17 @@ def unlock():
   k = SecureBinaryData(getpass.getpass('decrypt passphrase:'))
   wallet.unlock(securePassphrase=k)  # Will throw on error 
   
+def dumpImportedAddrs():
+  unlock()
+  print '"pubkey","privkey"'
+  for addrObj in wallet.addrMap.values():
+    if addrObj.chainIndex != -2:
+      continue
+    pub_key = addrObj.getAddrStr()
+    # priv_key = encodePrivKeyBase58(addrObj.binPrivKey32_Plain.toBinStr())
+    priv_key = ""
+    print "\"%s\",\"%s\"" % (pub_key, priv_key)
+  
 def dumpPrivAddrs():
   unlock()
   print '"idx","pubkey","privkey"'
@@ -44,4 +55,5 @@ def dumpPrivAddrs():
    
 # createNewPubAddrs(2)
 # dumpPubAddrs()
-dumpPrivAddrs()
+# dumpPrivAddrs()
+dumpImportedAddrs()
