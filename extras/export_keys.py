@@ -27,10 +27,13 @@ def dumpPubAddrs():
   for i in range(0,wallet.lastComputedChainIndex+1):
     pub_addr = getPubAddrAtIndex(i)
     print "%03d: %s" % (i,pub_addr)
-    
-def dumpPrivAddrs():
+
+def unlock():   
   k = SecureBinaryData(getpass.getpass('decrypt passphrase:'))
-  wallet.unlock(securePassphrase=k)  # Will throw on error
+  wallet.unlock(securePassphrase=k)  # Will throw on error 
+  
+def dumpPrivAddrs():
+  unlock()
   print '"idx","pubkey","privkey"'
   for i in range(0,wallet.lastComputedChainIndex+1):
     addrObj = getAddrAtIndex(i)
@@ -40,5 +43,5 @@ def dumpPrivAddrs():
     print "\"%s\",\"%s\",\"%s\"" % (addrObj.chainIndex,pub_key, priv_key)
    
 # createNewPubAddrs(2)
-dumpPubAddrs()
-# dumpPrivAddrs()
+# dumpPubAddrs()
+dumpPrivAddrs()
