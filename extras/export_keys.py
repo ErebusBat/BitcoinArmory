@@ -12,18 +12,17 @@ def getNewPubAddr():
   return wallet.getNextUnusedAddress().getAddrStr()
   
 def getPubAddrAtIndex(i):
-  if i > wallet.lastComputedChainIndex:
-    print "*** END OF CHAIN ***"
-    return ""
   pub_addr = wallet.getAddress160ByChainIndex(i)
   return wallet.addrMap[pub_addr].getAddrStr()
-
+  
+def createNewPubAddrs(count=50):
+  for i in range(0,count):
+    pub_addr = getNewPubAddr()
+    print "%03d: %s" % (i,pub_addr)
+    
 def dumpPubAddrs():
-  for i in range(0,250):
-    # pub_addr = getNewPubAddr()
+  for i in range(0,wallet.lastComputedChainIndex+1):
     pub_addr = getPubAddrAtIndex(i)
-    if pub_addr == "":
-      exit()
     print "%03d: %s" % (i,pub_addr)
     
 def dumpPrivAddrs():
@@ -36,5 +35,6 @@ def dumpPrivAddrs():
     priv_key = ""
     print "\"%s\",\"%s\",\"%s\"" % (addrObj.chainIndex,pub_key, priv_key)
    
-# dumpPubAddrs()
-dumpPrivAddrs()
+# createNewPubAddrs(2)
+dumpPubAddrs()
+# dumpPrivAddrs()
