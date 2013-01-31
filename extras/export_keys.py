@@ -12,8 +12,11 @@ def getNewPubAddr():
   return wallet.getNextUnusedAddress().getAddrStr()
   
 def getPubAddrAtIndex(i):
+  return getAddrAtIndex(i).getAddrStr()
+  
+def getAddrAtIndex(i):
   pub_addr = wallet.getAddress160ByChainIndex(i)
-  return wallet.addrMap[pub_addr].getAddrStr()
+  return wallet.addrMap[pub_addr]
   
 def createNewPubAddrs(count=50):
   for i in range(0,count):
@@ -29,7 +32,8 @@ def dumpPrivAddrs():
   k = SecureBinaryData(getpass.getpass('decrypt passphrase:'))
   wallet.unlock(securePassphrase=k)  # Will throw on error
   print '"idx","pubkey","privkey"'
-  for addrObj in wallet.addrMap.values():
+  for i in range(0,wallet.lastComputedChainIndex+1):
+    addrObj = getAddrAtIndex(i)
     pub_key = addrObj.getAddrStr()
     # priv_key = encodePrivKeyBase58(addrObj.binPrivKey32_Plain.toBinStr())
     priv_key = ""
