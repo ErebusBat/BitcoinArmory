@@ -67,10 +67,10 @@ def encodePrivKeyBase58(privKeyBin):
    return binary_to_base58(bin33 + chk)
 
 def getNewPubAddr():
-  return wallet.getNextUnusedAddress().getAddrStr()
+  return wallet.getNextUnusedAddress()
   
 def getPubAddrAtIndex(i):
-  return getAddrAtIndex(i).getAddrStr()
+  return getAddrAtIndex(i)
   
 def getAddrAtIndex(i):
   pub_addr = wallet.getAddress160ByChainIndex(i)
@@ -79,13 +79,13 @@ def getAddrAtIndex(i):
 def createNewPubAddrs(count=50):
   for i in range(0,count):
     pub_addr = getNewPubAddr()
-    printAddrInfo(seq=i,pubKey=pub_addr,printHeaders=(i==0))
+    printAddrInfo(seq=pub_addr.chainIndex,pubKey=pub_addr.getAddrStr(),printHeaders=(i==0))
     
 def dumpPubAddrs(printHeaders=True):
   for i in range(0,wallet.lastComputedChainIndex+1):
     pub_addr = getPubAddrAtIndex(i)
-    printAddrInfo(seq=i, \
-      pubKey=pub_addr, \
+    printAddrInfo(seq=pub_addr.chainIndex, \
+      pubKey=pub_addr.getAddrStr(), \
       printHeaders=(i==0 and printHeaders))
   
 def dumpImportedAddrs(printHeaders=True,printSeq=False):
