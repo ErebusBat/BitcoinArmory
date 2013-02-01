@@ -117,6 +117,11 @@ def dumpPrivAddrs(printHeaders=True):
 #############################  START ACTUAL PROGRAM 
 if len(argv)<3:
    print '\n\nUSAGE: %s <wallet file> <new #|dump|dumpPriv|dumpImport|dumpAll>' % argv[0]
+   
+   print '\nEXPORT: If you want to export to a file then you can feed through tail to chop'
+   print 'the armory header:'
+   print '  %s /path/to/full_or_watchonly.wallet new 50 | tail -n +12 > keys.txt' % argv[0]
+   
    print '\nEXAMPLES:'
    print '  Generate a single new address or 50'
    print '    %s /path/to/full_or_watchonly.wallet new' % (argv[0])
