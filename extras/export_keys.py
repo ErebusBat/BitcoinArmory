@@ -31,7 +31,6 @@ if not foundArmory:
   exit(1)
 
 from armoryengine import *
-wallet = PyBtcWallet().readWalletFile('/Users/aburns/Library/Application Support/Armory/armory_37KiZPH1q_.wallet')
 
 def getNewPubAddr():
   return wallet.getNextUnusedAddress().getAddrStr()
@@ -53,8 +52,13 @@ def dumpPubAddrs():
     pub_addr = getPubAddrAtIndex(i)
     print "%03d: %s" % (i,pub_addr)
 
-def unlock():   
+def unlock(): 
+  if not wallet.isLocked:
+    return  
   k = SecureBinaryData(getpass.getpass('decrypt passphrase:'))
+  if not wallet.verifyPassphrase(k):
+    print '*** ERROR: Incorrect wallet passphrase!'
+    exit(1)
   wallet.unlock(securePassphrase=k)  # Will throw on error 
   
 def encodePrivKeyBase58(privKeyBin):
@@ -85,8 +89,49 @@ def dumpPrivAddrs():
     pub_key = addrObj.getAddrStr()
     priv_key = encodePrivKeyBase58(addrObj.binPrivKey32_Plain.toBinStr())
     print "\"%s\",\"%s\",\"%s\"" % (addrObj.chainIndex,pub_key, priv_key)
-   
-# createNewPubAddrs(2)
-# dumpPubAddrs()
-# dumpPrivAddrs()
-dumpImportedAddrs()
+
+#############################  START ACTUAL PROGRAM 
+if len(argv)<3:
+   print '\n\nUSAGE: %s <wallet file> <new #|dump|dumpPriv|dumpImport|dumpAll>' % argv[0]
+   print '\nEXAMPLES:'
+   print '  Generate a single new address or 50'
+   print '    %s /path/to/full_or_watchonly.wallet new' % (argv[0])
+   print '    %s /path/to/full_or_watchonly.wallet new 50' % (argv[0])
+   print ''
+   print '  Dump all previously generated public addresses in the chain'
+   print '    %s /path/to/full_or_watchonly.wallet dump' % (argv[0])
+   print ''
+   print '  Dump all previously generated private addresses in the chain'
+   print '    %s /path/to/full.wallet dumpPriv' % (argv[0])
+   print ''
+   print '  Dump all previously imported private addresses'
+   print '    %s /path/to/full.wallet dumpImport' % (argv[0])
+   print ''
+   print '  Dump all private addresses private AND imported'
+   print '    %s /path/to/full.wallet dumpAll' % (argv[0])
+   exit(0)
+
+# Parse args & open wallet
+wallet_file = argv[1]
+command = argv[2].lower()   
+print '       Using wallet file : %s' % wallet_file
+wallet = PyBtcWallet().readWalletFile(wallet_file)
+
+# Run the requested command
+if command == 'new':
+  count = 1
+  if len(argv)==4:
+    count = int(argv[3])
+  createNewPubAddrs(count)
+elif command == 'dump':
+  dumpPubAddrs()
+elif command == 'dumppriv':
+  dumpPrivAddrs()
+elif command == 'dumpimport':
+  dumpImportedAddrs()
+elif command == 'dumpall':
+  dumpPrivAddrs()
+  dumpImportedAddrs()
+else:
+  print '*** ERROR: I dont know how to do %s' % argv[2]
+  exit(1)
