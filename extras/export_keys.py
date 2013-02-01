@@ -32,25 +32,20 @@ if not foundArmory:
 
 from armoryengine import *
 
-def getNewPubAddr():
-  return wallet.getNextUnusedAddress().getAddrStr()
-  
-def getPubAddrAtIndex(i):
-  return getAddrAtIndex(i).getAddrStr()
-  
-def getAddrAtIndex(i):
-  pub_addr = wallet.getAddress160ByChainIndex(i)
-  return wallet.addrMap[pub_addr]
-  
-def createNewPubAddrs(count=50):
-  for i in range(0,count):
-    pub_addr = getNewPubAddr()
-    print "%03d: %s" % (i,pub_addr)
-    
-def dumpPubAddrs():
-  for i in range(0,wallet.lastComputedChainIndex+1):
-    pub_addr = getPubAddrAtIndex(i)
-    print "%03d: %s" % (i,pub_addr)
+def printAddrInfo(pubKey,privKey=None,seq=None,printHeaders=True):
+  if printHeaders:
+    if seq is not None:
+      sys.stdout.write('seq,')
+    sys.stdout.write('pubkey')
+    if privKey is not None:
+      sys.stdout.write(',privkey')
+    print ''
+  if seq is not None:
+    sys.stdout.write('%04d,' % seq)
+  sys.stdout.write(pubKey)
+  if privKey is not None:
+    sys.stdout.write(',' + privKey)
+  print ''  
 
 def unlock(): 
   if not wallet.isLocked:
@@ -70,25 +65,54 @@ def encodePrivKeyBase58(privKeyBin):
    bin33 = PRIVKEYBYTE + privKeyBin
    chk = computeChecksum(bin33)
    return binary_to_base58(bin33 + chk)
+
+def getNewPubAddr():
+  return wallet.getNextUnusedAddress().getAddrStr()
   
-def dumpImportedAddrs():
+def getPubAddrAtIndex(i):
+  return getAddrAtIndex(i).getAddrStr()
+  
+def getAddrAtIndex(i):
+  pub_addr = wallet.getAddress160ByChainIndex(i)
+  return wallet.addrMap[pub_addr]
+  
+def createNewPubAddrs(count=50):
+  for i in range(0,count):
+    pub_addr = getNewPubAddr()
+    printAddrInfo(seq=i,pubKey=pub_addr,printHeaders=(i==0))
+    
+def dumpPubAddrs(printHeaders=True):
+  for i in range(0,wallet.lastComputedChainIndex+1):
+    pub_addr = getPubAddrAtIndex(i)
+    printAddrInfo(seq=i, \
+      pubKey=pub_addr, \
+      printHeaders=(i==0 and printHeaders))
+  
+def dumpImportedAddrs(printHeaders=True,printSeq=False):
   unlock()
-  print '"pubkey","privkey"'
   for addrObj in wallet.addrMap.values():
-    if addrObj.chainIndex != -2:
+    seq = addrObj.chainIndex
+    if seq != -2:
       continue
     pub_key = addrObj.getAddrStr()
-    priv_key = encodePrivKeyBase58(addrObj.binPrivKey32_Plain.toBinStr())
-    print "\"%s\",\"%s\"" % (pub_key, priv_key)
+    priv_key = encodePrivKeyBase58(addrObj.binPrivKey32_Plain.toBinStr())    
+    if not printSeq:
+      seq = None
+    printAddrInfo(seq=seq, \
+      pubKey=pub_key, \
+      privKey=priv_key, \
+      printHeaders=(seq==0 and printHeaders))
   
-def dumpPrivAddrs():
+def dumpPrivAddrs(printHeaders=True):
   unlock()
-  print '"idx","pubkey","privkey"'
   for i in range(0,wallet.lastComputedChainIndex+1):
     addrObj = getAddrAtIndex(i)
     pub_key = addrObj.getAddrStr()
     priv_key = encodePrivKeyBase58(addrObj.binPrivKey32_Plain.toBinStr())
-    print "\"%s\",\"%s\",\"%s\"" % (addrObj.chainIndex,pub_key, priv_key)
+    printAddrInfo(seq=i, \
+      pubKey=pub_key, \
+      privKey=priv_key, \
+      printHeaders=(i==0 and printHeaders))
 
 #############################  START ACTUAL PROGRAM 
 if len(argv)<3:
@@ -131,7 +155,7 @@ elif command == 'dumpimport':
   dumpImportedAddrs()
 elif command == 'dumpall':
   dumpPrivAddrs()
-  dumpImportedAddrs()
+  dumpImportedAddrs(printHeaders=False,printSeq=True)
 else:
   print '*** ERROR: I dont know how to do %s' % argv[2]
   exit(1)
