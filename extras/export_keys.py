@@ -1,9 +1,34 @@
-# cd /usr/local/Cellar/armory-qt/0.86.3-beta/share/armory 
-# PYTHONPATH=`brew --prefix`/lib/python2.7/site-packages /usr/bin/python export_keys.py
+# To run on OSX you have to do some funky stuff
+# The export_keys script does NOT have to be part of the homebrew package
+# But you have to use homebrew python packages but system python
+# No idea why, but that is the way it is
+# Also you probably want 
+# PYTHONPATH=`brew --prefix`/lib/python2.7/site-packages /usr/bin/python export_keys.py /path/to.wallet dumpall
 
 import sys
 import getpass
-sys.path.append('/usr/local/Cellar/armory-qt/0.86.3-beta/share/armory') # change to whereever armory is
+import os
+
+# Try to figure out where armory is installed
+def tryAppendArmoryPath(p):
+  p = os.path.abspath(p)
+  if os.path.exists(os.path.join(p, 'armoryengine.py')):
+    print 'Using Armory @ : ' + p
+    sys.path.append(p)
+    return True
+  else:
+    return False
+
+foundArmory = False
+if not foundArmory:
+  foundArmory = tryAppendArmoryPath(os.environ.get('ARMORY_HOME',''))
+if not foundArmory:
+  foundArmory = tryAppendArmoryPath('..')
+if not foundArmory:
+  foundArmory = tryAppendArmoryPath('/usr/local/Cellar/armory-qt/0.86.3-beta/share/armory')
+if not foundArmory:
+  print '*** Error Can not find armory, set ARMORY_HOME'
+  exit(1)
 
 from armoryengine import *
 wallet = PyBtcWallet().readWalletFile('/Users/aburns/Library/Application Support/Armory/armory_37KiZPH1q_.wallet')
