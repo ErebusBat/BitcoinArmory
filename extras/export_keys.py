@@ -32,6 +32,16 @@ def unlock():
   k = SecureBinaryData(getpass.getpass('decrypt passphrase:'))
   wallet.unlock(securePassphrase=k)  # Will throw on error 
   
+def encodePrivKeyBase58(privKeyBin):
+   """
+   Ported from HEAD, this function is in >=0.87, see 
+   https://bitcointalk.org/index.php?topic=56424.msg1494967#msg1494967
+   """
+   PRIVKEYBYTE = '\x80'  # IMPORTANT: This will ONLY work for the mainnet (NOT TESTNET)
+   bin33 = PRIVKEYBYTE + privKeyBin
+   chk = computeChecksum(bin33)
+   return binary_to_base58(bin33 + chk)
+  
 def dumpImportedAddrs():
   unlock()
   print '"pubkey","privkey"'
@@ -39,8 +49,7 @@ def dumpImportedAddrs():
     if addrObj.chainIndex != -2:
       continue
     pub_key = addrObj.getAddrStr()
-    # priv_key = encodePrivKeyBase58(addrObj.binPrivKey32_Plain.toBinStr())
-    priv_key = ""
+    priv_key = encodePrivKeyBase58(addrObj.binPrivKey32_Plain.toBinStr())
     print "\"%s\",\"%s\"" % (pub_key, priv_key)
   
 def dumpPrivAddrs():
@@ -49,8 +58,7 @@ def dumpPrivAddrs():
   for i in range(0,wallet.lastComputedChainIndex+1):
     addrObj = getAddrAtIndex(i)
     pub_key = addrObj.getAddrStr()
-    # priv_key = encodePrivKeyBase58(addrObj.binPrivKey32_Plain.toBinStr())
-    priv_key = ""
+    priv_key = encodePrivKeyBase58(addrObj.binPrivKey32_Plain.toBinStr())
     print "\"%s\",\"%s\",\"%s\"" % (addrObj.chainIndex,pub_key, priv_key)
    
 # createNewPubAddrs(2)
